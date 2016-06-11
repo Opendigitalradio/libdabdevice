@@ -19,7 +19,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_PREFIX}/bin" CACHE STRING "The outp
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_PREFIX}/lib" CACHE STRING "The output path for shared libraries" FORCE)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" CACHE STRING "The output path for static libraries" FORCE)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -pedantic -Wall -Wextra -Werror")
+set(CMAKE_CXX_FLAGS "-std=c++11 -pedantic -Wall -Wextra -Werror -pthread")
 
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 

@@ -62,7 +62,7 @@ USE_PDFLATEX           = YES
 LATEX_HIDE_INDICES     = YES
 LATEX_HEADER           = @PROJECT_SOURCE_DIR@/latex/@LATEX_HEADER_PREFIX@header.tex
 LATEX_FOOTER           = @PROJECT_SOURCE_DIR@/latex/@LATEX_HEADER_PREFIX@footer.tex
-INCLUDE_PATH           = @PROJECT_SOURCE_DIR@/include \
-                         @PROJECT_SOURCE_DIR@/common/include
-EXCLUDE_SYMBOLS        = __*
+INCLUDE_PATH           = @PROJECT_SOURCE_DIR@/include
+EXCLUDE_SYMBOLS        = __* \
+                         *transmission_modes*
 INTERNAL_DOCS          = @GENERATE_INTERNAL_DOCS@
