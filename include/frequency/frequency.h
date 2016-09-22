@@ -34,7 +34,7 @@ namespace dab
      * @brief Convert a frequency to std::uint32_t for APIs that do not understand dab::frequency
      * like librtlsdr.
      */
-    explicit operator std::uint32_t()
+    explicit constexpr operator std::uint32_t() const
       {
       return m_value;
       }

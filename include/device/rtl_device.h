@@ -78,7 +78,7 @@ namespace dab
       rtlsdr_set_tuner_gain_mode(m_device, 0);
       rtlsdr_set_center_freq(m_device, static_cast<std::uint32_t>(centerFrequency));
 
-      return rtlsdr_get_center_freq(m_device);
+      return rtlsdr_get_center_freq(m_device) == std::uint32_t(centerFrequency);
       }
 
     void run() override
@@ -87,9 +87,7 @@ namespace dab
 
       auto future = std::async(std::launch::async, [&]{ rtlsdr_read_async(m_device, &_internal_device::callback, this, 0, 0); });
 
-      auto t = 40000;
-
-      while(m_running.load(std::memory_order_acquire) && t--)
+      while(m_running.load(std::memory_order_acquire))
         {
         std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
@@ -97,13 +95,23 @@ namespace dab
       rtlsdr_cancel_async(m_device);
       }
 
-    bool enable(option const &) override
+    bool enable(option const & option) override
       {
+      if(option == dab::device::option::automatic_gain_control)
+        {
+        return !rtlsdr_set_agc_mode(m_device, 1);
+        }
+
       return false;
       }
 
-    bool disable(option const &) override
+    bool disable(option const & option) override
       {
+      if(option == dab::device::option::automatic_gain_control)
+        {
+        return !rtlsdr_set_agc_mode(m_device, 0);
+        }
+
       return false;
       }
 

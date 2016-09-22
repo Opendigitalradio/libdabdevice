@@ -8,7 +8,7 @@ endif()
 option(BUILD_DOCUMENTATION          "Build the libdabdecode documentation." OFF)
 option(BUILD_DOCUMENTATION_ONLY     "Only build the documentation not the libraries." OFF)
 option(BUILD_INTERNAL_DOCUMENTATION "Generate internal developer documentation." OFF)
-option(WITH_DABDEVICE_TESTS         "Build and run the unit tests." ON)
+option(WITH_DABDEVICE_TESTS         "Build and run the unit tests." OFF)
 option(DOCUMENTATION_FOR_THESIS     "Build the documentation for the thesis with black hyperlinks." OFF)
 
 
@@ -58,8 +58,6 @@ else()
   include_directories("include")
   include_directories(SYSTEM ${DABCOMMON_INCLUDES})
 
-  add_subdirectory("src")
-
   if(WITH_DABDEVICE_TESTS)
     include(CUTE)
     include_directories(SYSTEM "third_party/cute")
@@ -100,8 +98,5 @@ endif()
 
 
 if(HAS_PARENT)
-  set(DABDECODE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include;${DABCOMMON_INCLUDES}" PARENT_SCOPE)
-  set(DABDECODE_LIBRARIES_PATH "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"  PARENT_SCOPE)
-  set(DABDECODE_SHARED_LIBRARIES "${PROJECT_NAME}"  PARENT_SCOPE)
-  set(DABDECODE_STATIC_LIBRARIES "${PROJECT_NAME}_static"  PARENT_SCOPE)
+  set(DABDEVICE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include;${DABCOMMON_INCLUDES}" PARENT_SCOPE)
 endif()

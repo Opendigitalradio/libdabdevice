@@ -46,8 +46,7 @@ SHOW_NAMESPACES        = NO
 SORT_MEMBERS_CTORS_1ST = YES
 QUIET                  = YES
 WARN_IF_UNDOCUMENTED   = NO
-INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/include \
-                         @CMAKE_CURRENT_SOURCE_DIR@/common/include
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/include
 FILE_PATTERNS          = *.h *.dox
 RECURSIVE              = YES
 REFERENCED_BY_RELATION = YES
@@ -63,6 +62,4 @@ LATEX_HIDE_INDICES     = YES
 LATEX_HEADER           = @PROJECT_SOURCE_DIR@/latex/@LATEX_HEADER_PREFIX@header.tex
 LATEX_FOOTER           = @PROJECT_SOURCE_DIR@/latex/@LATEX_HEADER_PREFIX@footer.tex
 INCLUDE_PATH           = @PROJECT_SOURCE_DIR@/include
-EXCLUDE_SYMBOLS        = __* \
-                         *transmission_modes*
 INTERNAL_DOCS          = @GENERATE_INTERNAL_DOCS@
