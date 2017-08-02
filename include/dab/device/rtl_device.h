@@ -1,8 +1,8 @@
-#ifndef __DAB_DEVICE__RTL_DEVICE
-#define __DAB_DEVICE__RTL_DEVICE
+#ifndef DABDEVICE__RTL_DEVICE
+#define DABDEVICE__RTL_DEVICE
 
-#include "constants/sample_rate.h"
-#include "device/device.h"
+#include "dab/constants/sample_rate.h"
+#include "dab/device/device.h"
 
 #include <rtl-sdr.h>
 
@@ -130,7 +130,7 @@ namespace dab
 
       for(std::uint32_t idx = 0; idx < length; idx += 2)
         {
-        samplesQueue.enqueue(__internal_common::sample_t{
+        samplesQueue.enqueue(internal::sample_t{
           float(buffer[idx] - 128) / 128,
           float(buffer[idx + 1] - 128) / 128
           });
@@ -141,4 +141,3 @@ namespace dab
   }
 
 #endif
-

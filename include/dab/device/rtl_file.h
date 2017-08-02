@@ -1,7 +1,9 @@
-#ifndef __DAB_DEVICE__RTL_FILE
-#define __DAB_DEVICE__RTL_FILE
+#ifndef DABDEVICE__RTL_FILE
+#define DABDEVICE__RTL_FILE
 
-#include "device/device.h"
+#include "dab/device/device.h"
+
+#include <dab/types/common_types.h>
 
 #include <fstream>
 #include <stdexcept>
@@ -103,7 +105,7 @@ namespace dab
       }
 
     private:
-      dab::__internal_common::sample_t get_sample()
+      internal::sample_t get_sample()
         {
         std::uint8_t real{0};
         std::uint8_t imag{0};
@@ -114,7 +116,7 @@ namespace dab
         float floating_real = real;
         float floating_imag = imag;
 
-        return dab::__internal_common::sample_t{(floating_real - 128) / 128, (floating_imag - 128) / 128};
+        return internal::sample_t{(floating_real - 128) / 128, (floating_imag - 128) / 128};
         }
 
       std::string const m_filename;

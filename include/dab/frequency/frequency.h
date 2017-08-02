@@ -1,5 +1,5 @@
-#ifndef __DAB_FREQUENCY__FREQUENCY
-#define __DAB_FREQUENCY__FREQUENCY
+#ifndef DABDEVICE__FREQUENCY
+#define DABDEVICE__FREQUENCY
 
 #include <cstdint>
 
@@ -108,4 +108,3 @@ namespace dab
   }
 
 #endif
-

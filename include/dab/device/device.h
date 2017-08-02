@@ -1,9 +1,9 @@
-#ifndef __DAB_DEVICE_DEVICE
-#define __DAB_DEVICE_DEVICE
+#ifndef DABDEVICE__DEVICE
+#define DABDEVICE__DEVICE
 
-#include "frequency/frequency.h"
+#include "dab/frequency/frequency.h"
 
-#include <types/common_types.h>
+#include <dab/types/common_types.h>
 
 #include <atomic>
 #include <cstdint>

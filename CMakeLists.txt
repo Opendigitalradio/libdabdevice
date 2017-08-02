@@ -1,102 +1,36 @@
-cmake_minimum_required(VERSION 3.0)
-project(dabdevice CXX)
+cmake_minimum_required(VERSION 3.1)
+project("DABDevice"
+  LANGUAGES CXX
+  VERSION 1.0.1)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "The build type" FORCE)
+string(TOUPPER ${PROJECT_NAME} ${PROJECT_NAME}_UPPER)
+string(TOLOWER ${PROJECT_NAME} ${PROJECT_NAME}_LOWER)
+
+option(${${PROJECT_NAME}_UPPER}_ENABLE_TESTS
+  "Build and run the ${PROJECT_NAME} unit tests."
+  OFF
+  )
+
+if(${${${PROJECT_NAME}_UPPER}_ENABLE_TESTS})
+  set(CONAN_OPTIONS libdabdevice:test=True)
 endif()
 
-option(BUILD_DOCUMENTATION          "Build the libdabdecode documentation." OFF)
-option(BUILD_DOCUMENTATION_ONLY     "Only build the documentation not the libraries." OFF)
-option(BUILD_INTERNAL_DOCUMENTATION "Generate internal developer documentation." OFF)
-option(WITH_DABDEVICE_TESTS         "Build and run the unit tests." OFF)
-option(DOCUMENTATION_FOR_THESIS     "Build the documentation for the thesis with black hyperlinks." OFF)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
+set(CXX_VERSION "c++11")
 
+include("CompilerSetup")
+include("ConanPackages")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+install_conan_packages(SYSTEM_HEADERS
+  PKGOPTS ${CONAN_OPTIONS}
+  )
 
-set(OUTPUT_PREFIX "${CMAKE_BINARY_DIR}/products/${CMAKE_BUILD_TYPE}" CACHE STRING "The build product prefix" FORCE)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_PREFIX}/bin" CACHE STRING "The output path for executables" FORCE)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_PREFIX}/lib" CACHE STRING "The output path for shared libraries" FORCE)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" CACHE STRING "The output path for static libraries" FORCE)
+find_package(Boost REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -pedantic -Wall -Wextra -Werror -pthread")
+add_subdirectory("common")
+add_subdirectory("include")
 
-get_directory_property(HAS_PARENT PARENT_DIRECTORY)
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  option(WITH_ADDRESS_SANITIZER       "Include address/memory checks." OFF)
-  option(WITH_UNDEFINED_SANITIZER     "Include undefined behavior checks." OFF)
-
-  if(WITH_ADDRESS_SANITIZER OR WITH_UNDEFINED_SANITIZER)
-    string(APPEND CMAKE_CXX_FLAGS " -fno-omit-frame-pointer")
-
-    set(SANITIZERS "")
-
-    if(WITH_ADDRESS_SANITIZER)
-      list(APPEND SANITIZERS "address")
-    endif()
-
-    if(WITH_UNDEFINED_SANITIZER)
-      list(APPEND SANITIZERS "undefined")
-    endif()
-
-    string(REPLACE ";" "," SANITIZERS "${SANITIZERS}")
-    string(APPEND CMAKE_CXX_FLAGS " -fsanitize=${SANITIZERS}")
-  endif()
-endif()
-
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -Os")
-
-if(BUILD_DOCUMENTATION_ONLY)
-  set(BUILD_DOCUMENTATION ON CACHE BOOL "Build the libdabdecode documentation." FORCE)
-else()
-  find_package(Boost REQUIRED)
-
-  add_subdirectory("common")
-
-  include_directories("include")
-  include_directories(SYSTEM ${DABCOMMON_INCLUDES})
-
-  if(WITH_DABDEVICE_TESTS)
-    include(CUTE)
-    include_directories(SYSTEM "third_party/cute")
-    add_subdirectory(test)
-  endif()
-endif()
-
-if(BUILD_DOCUMENTATION OR BUILD_INTERNAL_DOCUMENTATION)
-  if(DOCUMENTATION_FOR_THESIS)
-    set(LATEX_HEADER_PREFIX "thesis_")
-  else()
-    set(LATEX_HEADER_PREFIX "")
-  endif()
-
-  set(GENERATE_INTERNAL_DOCS NO)
-
-  if(BUILD_INTERNAL_DOCUMENTATION)
-    set(GENERATE_INTERNAL_DOCS YES)
-
-    if(NOT BUILD_DOCUMENTATION)
-      set(BUILD_DOCUMENTATION ON CACHE BOOL "Build the libdabdecode documentation." FORCE)
-    endif()
-  endif()
-
-  find_package(Doxygen REQUIRED)
-
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-
-  add_custom_target(${PROJECT_NAME}_doc ALL ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                    COMMENT "Generating API documentation" VERBATIM)
-
-  add_custom_target(${PROJECT_NAME}_doc_pdf ALL make pdf &>/dev/null
-                    DEPENDS ${PROJECT_NAME}_doc
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_doc/latex
-                    COMMENT "Compiling API documentation")
-endif()
-
-
-if(HAS_PARENT)
-  set(DABDEVICE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include;${DABCOMMON_INCLUDES}" PARENT_SCOPE)
+if(${${PROJECT_NAME}_UPPER}_ENABLE_TESTS)
+  include("CUTE")
+  add_subdirectory(test)
 endif()
