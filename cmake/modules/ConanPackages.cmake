@@ -66,6 +66,7 @@ function(install_conan_packages)
     install
     --build=missing
     -g txt
+    -g cmake
     -s compiler=${_COMPILER}
     -s compiler.version=${_COMPILER_VERSION}
     -s compiler.libcxx=${_LIBCXX}

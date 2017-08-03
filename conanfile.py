@@ -1,5 +1,5 @@
 # pylint: disable=missing-docstring
-from conans import ConanFile, CMake
+from conans import ConanFile
 
 
 class LibDABDeviceConan(ConanFile):
@@ -11,19 +11,18 @@ class LibDABDeviceConan(ConanFile):
     settings = None
     options = {"test": [True, False]}
     default_options = "test=False"
-    generators = ['cmake', 'txt']
-    exports_sources = (
-        'include/*.h'
-    )
+    exports_sources = ('*', '!.git/*', '!build/*')
 
     def build(self):
-        if self.options.test:
-            cmake = CMake(self)
-            self.run('cmake libdabdevice %s' % cmake.command_line)
-            self.run('cmake --build . %s' % cmake.build_config)
+        test = self.options.test
 
-    def package(self):
-        self.copy('*.h', dst='include', src='include')
+        args = ['-DDABDEVICE_ENABLE_TESTS=%s' % ('On' if test else 'Off')]
+        self.run('cmake %s %s %s' % (
+            self.conanfile_directory,
+            '-DCMAKE_INSTALL_PREFIX="%s"' % self.package_folder,
+            ' '.join(args)
+        ))
+        self.run('cmake --build . --target install')
 
     def requirements(self):
         if self.options.test:
