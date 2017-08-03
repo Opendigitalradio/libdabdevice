@@ -11,6 +11,11 @@ option(${${PROJECT_NAME}_UPPER}_ENABLE_TESTS
   OFF
   )
 
+option(${${PROJECT_NAME}_UPPER}_ENABLE_DEMOS
+  "Build the ${PROJECT_NAME} demos."
+  OFF
+  )
+
 if(${${${PROJECT_NAME}_UPPER}_ENABLE_TESTS})
   set(CONAN_OPTIONS libdabdevice:test=True)
 endif()
@@ -29,6 +34,7 @@ find_package(Boost REQUIRED)
 
 add_subdirectory("common")
 add_subdirectory("include")
+add_subdirectory("src")
 
 if(${${PROJECT_NAME}_UPPER}_ENABLE_TESTS)
   include("CUTE")

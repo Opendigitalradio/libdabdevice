@@ -6,5 +6,5 @@ target_include_directories(${FAKE_TARGET} SYSTEM INTERFACE
   $<INSTALL_INTERFACE:include/${CMAKE_CURRENT_SOURCE_DIR}>
   )
 target_link_libraries(${FAKE_TARGET} INTERFACE
-  ${CMAKE_THREAD_LIBS_INIT}
+  dabcommon
   )

@@ -2,12 +2,14 @@
 #define DABDEVICE__RTL_FILE
 
 #include "dab/device/device.h"
+#include "dab/types/gain.h"
 
 #include <dab/types/common_types.h>
 
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace dab
   {
@@ -54,6 +56,22 @@ namespace dab
     bool tune(frequency) override
       {
       return true;
+      }
+
+    bool gain(dab::gain) override
+      {
+      return true;
+      }
+
+    dab::gain gain() const override
+      {
+      using namespace dab::literals;
+      return 0.0_dB;
+      }
+
+    std::vector<dab::gain> gains() const override
+      {
+      return {};
       }
 
     void run() override

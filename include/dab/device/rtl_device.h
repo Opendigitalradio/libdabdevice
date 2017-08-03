@@ -1,26 +1,54 @@
-#ifndef DABDEVICE__RTL_DEVICE
-#define DABDEVICE__RTL_DEVICE
+#ifndef DABDEVICE_RTL_DEVICE
+#define DABDEVICE_RTL_DEVICE
 
 #include "dab/constants/sample_rate.h"
 #include "dab/device/device.h"
+#include "dab/types/gain.h"
 
 #include <rtl-sdr.h>
 
+#include <cmath>
 #include <future>
-#include <iostream>
 #include <stdexcept>
+#include <vector>
 
 namespace dab
   {
 
-  namespace _internal_device
+  namespace internal
     {
     /**
      * @internal
      *
+     * @brief RTL-SDR gain control modes
+     *
      * @author Felix Morgner
+     * @since  1.0.1
+     */
+    enum struct rtl_gain_control : unsigned char
+      {
+      automatic = 0, ///< Automatic gain control
+      manual = 1, ///< Manual gain control
+      };
+
+    /**
+     * @internal
+     *
+     * @brief RTL-SDR AGC modes
+     */
+    enum struct rtl_agc_mode : unsigned char
+      {
+      off = 0, ///< AGC deactivated
+      on = 1, ///< AGC activated
+      };
+
+    /**
+     * @internal
      *
      * @brief The callback function for the asynchronous acquisition of samples.
+     *
+     * @author Felix Morgner
+     * @since  1.0.0
      */
     extern "C" void callback(unsigned char * buffer, uint32_t length, void * context);
     }
@@ -65,7 +93,29 @@ namespace dab
         throw std::runtime_error{"Error setting sample rate!"};
         }
 
-      rtlsdr_reset_buffer(m_device);
+      auto gaincount = rtlsdr_get_tuner_gains(m_device, nullptr);
+      std::vector<int> gains(gaincount);
+      rtlsdr_get_tuner_gains(m_device, gains.data());
+      m_gains.reserve(gains.size());
+      for(auto gain : gains)
+        {
+        m_gains.push_back(dab::gain(gain / 10.0f));
+        }
+
+      if(rtlsdr_set_tuner_gain_mode(m_device, static_cast<int>(internal::rtl_gain_control::manual)))
+        {
+        throw std::runtime_error{"Error setting gain mode!"};
+        }
+
+      if(rtlsdr_set_tuner_gain(m_device, static_cast<int>(m_gains[m_gains.size() / 2].value() * 10)))
+        {
+        throw std::runtime_error{"Error setting gain!"};
+        }
+
+      if(rtlsdr_reset_buffer(m_device))
+        {
+        throw std::runtime_error{"Error resetting buffers!"};
+        }
       }
 
     ~rtl_device()
@@ -75,17 +125,35 @@ namespace dab
 
     bool tune(frequency centerFrequency) override
       {
-      rtlsdr_set_tuner_gain_mode(m_device, 0);
       rtlsdr_set_center_freq(m_device, static_cast<std::uint32_t>(centerFrequency));
-
       return rtlsdr_get_center_freq(m_device) == std::uint32_t(centerFrequency);
+      }
+
+    bool gain(dab::gain gain) override
+      {
+      rtlsdr_set_tuner_gain_mode(m_device, static_cast<int>(internal::rtl_gain_control::manual));
+      rtlsdr_set_agc_mode(m_device, static_cast<int>(internal::rtl_agc_mode::off));
+
+      auto const realGain = closest_gain(gain);
+
+      return !rtlsdr_set_tuner_gain(m_device, static_cast<int>(realGain.value() * 10));
+      }
+
+    dab::gain gain() const override
+      {
+      return dab::gain{rtlsdr_get_tuner_gain(m_device) / 10.f};
+      }
+
+    std::vector<dab::gain> gains() const override
+      {
+      return m_gains;
       }
 
     void run() override
       {
       m_running.store(true, std::memory_order_release);
 
-      auto future = std::async(std::launch::async, [&]{ rtlsdr_read_async(m_device, &_internal_device::callback, this, 0, 0); });
+      auto future = std::async(std::launch::async, [&]{ rtlsdr_read_async(m_device, &internal::callback, this, 0, 0); });
 
       while(m_running.load(std::memory_order_acquire))
         {
@@ -97,44 +165,68 @@ namespace dab
 
     bool enable(option const & option) override
       {
-      if(option == dab::device::option::automatic_gain_control)
+      switch(option)
         {
-        return !rtlsdr_set_agc_mode(m_device, 1);
+        case option::automatic_gain_control:
+          rtlsdr_set_tuner_gain_mode(m_device, static_cast<int>(internal::rtl_gain_control::automatic));
+          return !rtlsdr_set_agc_mode(m_device, static_cast<int>(internal::rtl_agc_mode::on));
+        default:
+          return false;
         }
-
-      return false;
       }
 
     bool disable(option const & option) override
       {
-      if(option == dab::device::option::automatic_gain_control)
+      switch(option)
         {
-        return !rtlsdr_set_agc_mode(m_device, 0);
+        case option::automatic_gain_control:
+          rtlsdr_set_tuner_gain_mode(m_device, static_cast<int>(internal::rtl_gain_control::manual));
+          return !rtlsdr_set_agc_mode(m_device, static_cast<int>(internal::rtl_agc_mode::off));
+        default:
+          return false;
         }
-
-      return false;
       }
 
     private:
-      rtlsdr_dev_t * m_device{};
+      dab::gain closest_gain(dab::gain target) const
+        {
+        auto closest = m_gains[0];
+        for(auto && current : m_gains)
+          {
+          auto toClosest = std::abs(target.value() - closest.value());
+          auto toCurrent = std::abs(target.value() - current.value());
+          if(toCurrent < toClosest)
+            {
+            closest = current;
+            }
+          }
 
-      friend void _internal_device::callback(unsigned char * buffer, std::uint32_t length, void * context);
+        return closest;
+        }
+
+      rtlsdr_dev_t * m_device{};
+      std::vector<dab::gain> m_gains{};
+      std::vector<internal::sample_t> m_sampleBuffer{};
+
+      friend void internal::callback(unsigned char * buffer, std::uint32_t length, void * context);
     };
 
-  namespace _internal_device
+  namespace internal
     {
     extern "C" void callback(unsigned char * buffer, std::uint32_t length, void * context)
       {
       rtl_device * device = static_cast<rtl_device *>(context);
       auto & samplesQueue = device->m_samples;
+      auto & sampleBuffer = device->m_sampleBuffer;
+
+      sampleBuffer.resize(length / 2);
 
       for(std::uint32_t idx = 0; idx < length; idx += 2)
         {
-        samplesQueue.enqueue(internal::sample_t{
-          float(buffer[idx] - 128) / 128,
-          float(buffer[idx + 1] - 128) / 128
-          });
+        sampleBuffer[idx / 2] = internal::sample_t{ float(buffer[idx] - 128) / 128, float(buffer[idx + 1] - 128) / 128 };
         }
+
+      samplesQueue.enqueue(sampleBuffer);
       }
     }
 
