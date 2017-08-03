@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1.2)
 project("DABDevice"
   LANGUAGES CXX
   VERSION 1.0.1)
@@ -11,32 +11,50 @@ option(${${PROJECT_NAME}_UPPER}_ENABLE_TESTS
   OFF
   )
 
+option(${${PROJECT_NAME}_UPPER}_SKIP_CONAN
+  "Skip installing the dependencies for ${PROJECT_NAME} through conan."
+  OFF
+  )
+
 option(${${PROJECT_NAME}_UPPER}_ENABLE_DEMOS
   "Build the ${PROJECT_NAME} demos."
   OFF
   )
 
 if(${${${PROJECT_NAME}_UPPER}_ENABLE_TESTS})
-  set(CONAN_OPTIONS libdabdevice:test=True)
+  set(CONAN_OPTIONS ${CONAN_OPTIONS} libdabdevice:test=True)
+  get_directory_property(${PROJECT_NAME}_HAS_PARENT PARENT_DIRECTORY)
+  if(${PROJECT_NAME}_HAS_PARENT)
+    set(CONAN_OPTIONS ${CONAN_OPTIONS} PARENT_SCOPE)
+  endif()
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 set(CXX_VERSION "c++11")
 
 include("CompilerSetup")
-include("ConanPackages")
 
-install_conan_packages(SYSTEM_HEADERS
-  PKGOPTS ${CONAN_OPTIONS}
-  )
+if(NOT ${${PROJECT_NAME}_UPPER}_SKIP_CONAN)
+  include("ConanPackages")
+  install_conan_packages(SYSTEM_HEADERS
+    PKGOPTS ${CONAN_OPTIONS}
+    )
+endif()
 
-find_package(Boost REQUIRED)
-
-add_subdirectory("common")
 add_subdirectory("include")
 add_subdirectory("src")
 
 if(${${PROJECT_NAME}_UPPER}_ENABLE_TESTS)
   include("CUTE")
+  include_directories(SYSTEM
+    $<TARGET_PROPERTY:CONAN_PKG::CUTE,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:CONAN_PKG::CUTEX,INTERFACE_INCLUDE_DIRECTORIES>
+    )
   add_subdirectory(test)
 endif()
+
+install(EXPORT ${PROJECT_NAME}
+  DESTINATION "share/${${PROJECT_NAME}_LOWER}/cmake"
+  )
+
+export(EXPORT ${PROJECT_NAME})

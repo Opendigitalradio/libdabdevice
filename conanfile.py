@@ -2,7 +2,7 @@
 from conans import ConanFile, CMake
 
 
-class LibdabdeviceConan(ConanFile):
+class LibDABDeviceConan(ConanFile):
     name = 'libdabdevice'
     description = "The device abstraction layer of the ODR DAB data toolkit"
     license = 'BSD 3-clause'
@@ -12,6 +12,9 @@ class LibdabdeviceConan(ConanFile):
     options = {"test": [True, False]}
     default_options = "test=False"
     generators = ['cmake', 'txt']
+    exports_sources = (
+        'include/*.h'
+    )
 
     def build(self):
         if self.options.test:
@@ -20,12 +23,9 @@ class LibdabdeviceConan(ConanFile):
             self.run('cmake --build . %s' % cmake.build_config)
 
     def package(self):
-        self.copy('*.h', dst='include', src='libdabdevice/include')
+        self.copy('*.h', dst='include', src='include')
 
     def requirements(self):
         if self.options.test:
             self.requires('CUTEX/[>=1.0]@fmorgner/stable')
         self.requires('libdabcommon/[>=1.0]@fmorgner/stable')
-
-    def source(self):
-        self.run('git clone %s' % self.url)
