@@ -12,3 +12,11 @@ target_link_libraries(rtl_dump
   dabdevice
   rtlsdr
   )
+
+set(DEMO_TARGETS
+  rtl_dump
+  )
+
+install(TARGETS ${DEMO_TARGETS}
+  RUNTIME DESTINATION "bin"
+  )
