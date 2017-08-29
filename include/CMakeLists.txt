@@ -8,7 +8,7 @@ target_include_directories(${LIBRARY_NAME} SYSTEM INTERFACE
   )
 
 target_link_libraries(${LIBRARY_NAME} INTERFACE
-  CONAN_PKG::libdabcommon
+  ${${${PROJECT_NAME}_UPPER}_DEPS}
   )
 
 install(TARGETS ${LIBRARY_NAME}

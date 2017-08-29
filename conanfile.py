@@ -4,7 +4,7 @@ from conans import ConanFile
 
 class LibDABDeviceConan(ConanFile):
     name = 'libdabdevice'
-    version = '1.0.1'
+    version = '1.0.2'
     description = (
         'The device abstraction subsystem for the ODR DAB data toolkit, that '
         'provides a uniform interface for different sampling devices.'
@@ -45,7 +45,9 @@ class LibDABDeviceConan(ConanFile):
             self.package_folder
         )
 
-        self.run(('cmake {directory}'
+        self.run(('mkdir build && cd build &&'
+                  ' cmake {directory}'
+                  ' -DEXTERNAL_DEPS_VIA=conan'
                   ' {prefix}'
                   ' {test}'
                   ' {demos}').format(**{
@@ -55,7 +57,7 @@ class LibDABDeviceConan(ConanFile):
                       'test': dabdevice_test,
                   }))
 
-        self.run('cmake --build . --target install')
+        self.run('cd build && cmake --build . --target install')
 
     def package_info(self):
         self.cpp_info.libs = [
