@@ -128,6 +128,20 @@ namespace dab
         {
         return manufacturer + " - " + kind + " - " + std::to_string(id) + " - " + serial;
         }
+
+      /**
+       * @brief Compare two device descriptors for equality
+       *
+       * @param rhs The descriptor to compare this one to
+       *
+       * @return @c true iff. rhs is equal to @c *this
+       * @since 1.0.3
+       */
+      bool operator==(descriptor const & rhs) const
+        {
+        return id == rhs.id && type == rhs.type;
+        }
+
       };
 
     /**
