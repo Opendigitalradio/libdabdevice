@@ -93,7 +93,7 @@ namespace dab
    * @author Felix Morgner
    * @since  1.0.1
    */
-  std::ostream & operator<<(std::ostream & out, gain const & gain)
+  inline std::ostream & operator<<(std::ostream & out, gain const & gain)
     {
     return out << gain.value() << " dB";
     }
