@@ -153,6 +153,13 @@ namespace dab
       return false;
       }
 
+    static std::vector<descriptor> descriptors()
+      {
+      return {
+        {0, "0x0042", "RTL Raw File", "Opendigitalradio", typeid(rtl_file)},
+      };
+      }
+
     private:
       internal::sample_t get_sample()
         {

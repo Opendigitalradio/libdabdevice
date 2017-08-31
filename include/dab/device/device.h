@@ -38,11 +38,22 @@
 #include <dab/types/common_types.h>
 
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <string>
+#include <typeindex>
 #include <vector>
 
 namespace dab
   {
+
+  /**
+   * @brief Convenience alias for std::unique_ptr<device>
+   *
+   * @see #make_device
+   */
+  using device_ptr = std::unique_ptr<struct device>;
 
   /**
    * @author Felix Morgner
@@ -57,6 +68,67 @@ namespace dab
    */
   struct device
     {
+
+    /**
+     * @brief A generic descriptor for devices
+     *
+     * This struct provides access to generic information of a device.
+     *
+     * @since 1.0.3
+     */
+    struct descriptor
+      {
+      /**
+       * @brief The class relative device ID
+       *
+       * @since 1.0.3
+       */
+      std::size_t id;
+
+      /**
+       * @brief The serial number of the device
+       *
+       * @note May be empty
+       *
+       * @since 1.0.3
+       */
+      std::string serial;
+
+      /**
+       * @brief The kind of the device (e.g. RTL820)
+       *
+       * @note Must not be empty
+       *
+       * @since 1.0.3
+       */
+      std::string kind;
+
+      /**
+       * @brief The manufacturer of the device
+       *
+       * @note Must not be empty
+       *
+       * @since 1.0.3
+       */
+      std::string manufacturer;
+
+      /**
+       * @brief The C++ type of the device
+       *
+       * @since 1.0.3
+       */
+      std::type_index type;
+
+      /**
+       * @brief Convert the descriptor into a human readable form
+       *
+       * @since 1.0.3
+       */
+      explicit operator std::string() const
+        {
+        return manufacturer + " - " + kind + " - " + std::to_string(id) + " - " + serial;
+        }
+      };
 
     /**
      * @brief This enum defines different options that might be supported by devices.
@@ -162,6 +234,14 @@ namespace dab
      */
     virtual bool disable(option const & option) = 0;
 
+    /**
+     * @brief Get the descriptors for all available devices of the type
+     */
+    static std::vector<device::descriptor> descriptors()
+      {
+      return {};
+      }
+
     protected:
       device(sample_queue_t & samples) : m_samples{samples} { }
 
@@ -169,6 +249,43 @@ namespace dab
 
       std::atomic_bool m_running{};
     };
+
+  /**
+   * @brief Get the descriptors for all available devices for the given device types
+   *
+   * This function retrieves all descriptors of all available devices of all specified types, as if by
+   * calling device::descriptors for every provided device type.
+   *
+   * @tparam DeviceTypes Zero or more types of SDR devices
+   * @note Specifying the same type more than one will result in the same descriptors being present
+   * multiple times.
+   *
+   * @since 1.0.3
+   */
+  template<typename ...DeviceTypes>
+  std::vector<device::descriptor> descriptors()
+    {
+    auto const perTypeDescriptors = std::vector<std::vector<device::descriptor>>{DeviceTypes::descriptors()...};
+    auto && result = std::vector<device::descriptor>{};
+    for(auto const & descriptorsForType : perTypeDescriptors)
+      {
+      result.insert(result.end(), descriptorsForType.cbegin(), descriptorsForType.cend());
+      }
+    return result;
+    }
+
+  /**
+   * @brief Create a new dynamically allocated device
+   *
+   * This function creates a new device on the heap and initializes it with with the given arguments.
+   *
+   * @since 1.0.3
+   */
+  template<typename DeviceType, typename ...ConstructorArgumentTypes>
+  device_ptr make_device(ConstructorArgumentTypes && ...constructorArguments)
+    {
+    return device_ptr{new DeviceType{std::forward<ConstructorArgumentTypes>(constructorArguments)...}};
+    }
 
   }
 

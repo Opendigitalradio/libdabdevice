@@ -38,6 +38,7 @@
 
 #include <rtl-sdr.h>
 
+#include <array>
 #include <cmath>
 #include <future>
 #include <stdexcept>
@@ -103,10 +104,15 @@ namespace dab
      * the specified queue. The caller must guarantee that the queue stays valid for
      * as long as samples are acquired from the device.
      *
+     * @param queue The destination queue for the acquired samples
+     * @param index The device index
+     *
      * @throws std::runtime_exception if either no device can be found, opening the first device fails
      * or the sample rate cannot be set to 2.048 MSps.
+     *
+     * @since 1.0.0
      */
-    rtl_device(sample_queue_t & queue) :
+    explicit rtl_device(sample_queue_t & queue, std::size_t const index = 0) :
       device{queue}
       {
       if(!rtlsdr_get_device_count())
@@ -114,7 +120,7 @@ namespace dab
         throw std::runtime_error{"No device found!"};
         }
 
-      if(rtlsdr_open(&m_device, 0))
+      if(rtlsdr_open(&m_device, index))
         {
         throw std::runtime_error{"Error opening device!"};
         }
@@ -216,6 +222,25 @@ namespace dab
         default:
           return false;
         }
+      }
+
+    static std::vector<device::descriptor> descriptors()
+      {
+      auto serialBuffer = std::array<char, 256>{};
+      auto productBuffer = std::array<char, 256>{};
+      auto manufacturerBuffer = std::array<char, 256>{};
+      auto const nofDevices = rtlsdr_get_device_count();
+
+      auto result = std::vector<device::descriptor>{};
+      result.reserve(nofDevices);
+
+      for(auto id = 0ull; id < nofDevices; ++id)
+        {
+        rtlsdr_get_device_usb_strings(id, manufacturerBuffer.data(), productBuffer.data(),serialBuffer.data());
+        result.push_back({id, serialBuffer.data(), productBuffer.data(), manufacturerBuffer.data(), typeid(rtl_device)});
+        }
+
+      return result;
       }
 
     private:
