@@ -1,0 +1,3 @@
+git+https://github.com/michaeljones/breathe@master#egg=breathe
+Sphinx>=1.4.9
+sphinx-rtd-theme>=0.1.9
