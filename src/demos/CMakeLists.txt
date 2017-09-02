@@ -17,6 +17,8 @@ set(DEMO_TARGETS
   rtl_dump
   )
 
-install(TARGETS ${DEMO_TARGETS}
-  RUNTIME DESTINATION "bin"
-  )
+if(NOT ${${PROJECT_NAME}_UPPER}_HAS_PARENT)
+  install(TARGETS ${DEMO_TARGETS}
+    RUNTIME DESTINATION "bin"
+    )
+endif()
