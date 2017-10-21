@@ -228,6 +228,13 @@ namespace dab
       };
 
     /**
+     * @brief A virtual destructor to allow for management through std::unique_ptr<dab::device>
+     *
+     * @since 1.0.3
+     */
+    virtual ~device() = default;
+
+    /**
      * @brief Tune receiver to the specified center frequency.
      *
      * This function is used to tune to a specified center frequency if
