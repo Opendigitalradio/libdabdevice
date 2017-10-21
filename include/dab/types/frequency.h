@@ -38,20 +38,20 @@ namespace dab
   {
 
   /**
-   * @author Felix Morgner
-   *
    * @brief A type to represent frequencies in Hz
    *
    * This type is a simple wrapper for an unsinged 32-bit integer. It allows to specify
    * that a frequency is required. The exist UDLs to create frequencies in Hz, kHz and MHz
    * in the namespace dab::literals.
+   *
+   * @since 1.0.0
    */
   struct frequency
     {
     /**
-     * @author Felix Morgner
-     *
      * @brief Construct a frequency representing the supplied number of Hertz.
+     *
+     * @since 1.0.0
      */
     explicit constexpr frequency(std::uint32_t hertz)
       : m_value{hertz}
@@ -60,14 +60,52 @@ namespace dab
       }
 
     /**
-     * @author Felix Morgner
-     *
      * @brief Convert a frequency to std::uint32_t for APIs that do not understand dab::frequency
      * like librtlsdr.
      */
     explicit constexpr operator std::uint32_t() const
       {
       return m_value;
+      }
+
+    /**
+     * @brief Construct a dab::frequency representing \p value kilo-Hertz
+     *
+     * @since 1.0.4
+     */
+    static constexpr frequency kHz(unsigned long long value)
+      {
+      return frequency{std::uint32_t(value * 1000)};
+      }
+
+    /**
+     * @brief Construct a dab::frequency representing \p value kilo-Hertz
+     *
+     * @since 1.0.4
+     */
+    static constexpr frequency kHz(long double value)
+      {
+      return frequency{std::uint32_t(value * 1000)};
+      }
+
+    /**
+     * @brief Construct a dab::frequency representing \p value mega-Hertz
+     *
+     * @since 1.0.4
+     */
+    static constexpr frequency MHz(unsigned long long value)
+      {
+      return frequency{std::uint32_t(value * 1000000)};
+      }
+
+    /**
+     * @brief Construct a dab::frequency representing \p value mega-Hertz
+     *
+     * @since 1.0.4
+     */
+    static constexpr frequency MHz(long double value)
+      {
+      return frequency{std::uint32_t(value * 1000000)};
       }
 
     private:
@@ -77,17 +115,15 @@ namespace dab
   /**
    * @namespace literals
    *
-   * @author Felix Morgner
-   *
    * @brief This namespace contains all UDLs for types in the namespace dab.
    */
   namespace literals
     {
 
     /**
-     * @author Felix Morgner
-     *
      * @brief Construct a dab::frequency representing \p value Hertz
+     *
+     * @since 1.0.0
      */
     frequency constexpr operator""_Hz(unsigned long long value)
       {
@@ -95,43 +131,43 @@ namespace dab
       }
 
     /**
-     * @author Felix Morgner
-     *
      * @brief Construct a dab::frequency representing \p value kilo-Hertz
+     *
+     * @since 1.0.0
      */
     frequency constexpr operator""_kHz(unsigned long long value)
       {
-      return frequency{std::uint32_t(value * 1000)};
+      return frequency::kHz(value);
       }
 
     /**
-     * @author Felix Morgner
-     *
      * @brief Construct a dab::frequency representing \p value kilo-Hertz
+     *
+     * @since 1.0.0
      */
     frequency constexpr operator""_kHz(long double value)
       {
-      return frequency{std::uint32_t(value * 1000)};
+      return frequency::kHz(value);
       }
 
     /**
-     * @author Felix Morgner
-     *
      * @brief Construct a dab::frequency representing \p value mega-Hertz
+     *
+     * @since 1.0.0
      */
     frequency constexpr operator""_MHz(unsigned long long value)
       {
-      return frequency{std::uint32_t(value * 1000000)};
+      return frequency::MHz(value);
       }
 
     /**
-     * @author Felix Morgner
-     *
      * @brief Construct a dab::frequency representing \p value mega-Hertz
+     *
+     * @since 1.0.0
      */
     frequency constexpr operator""_MHz(long double value)
       {
-      return frequency{std::uint32_t(value * 1000000)};
+      return frequency::MHz(value);
       }
 
     }
